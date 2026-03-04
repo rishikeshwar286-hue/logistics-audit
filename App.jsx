@@ -401,205 +401,160 @@ export default function App() {
                 </div>
               </div>
 
-              {/* RIGHT: Animated supply chain SVG */}
-              <div style={{ flex:"0 0 45%", position:"relative", display:"flex", alignItems:"center", justifyContent:"center", minHeight:320 }}>
-                {/* Ambient glow */}
-                <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse at 60% 50%,rgba(56,189,248,0.08),transparent 70%)", pointerEvents:"none" }} />
+
+              {/* RIGHT: Animated Earth + revolving planes */}
+              <div style={{ flex:"0 0 45%", position:"relative", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:340 }}>
+                <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse at 55% 50%,rgba(56,189,248,0.07),transparent 70%)", pointerEvents:"none" }} />
                 <style>{`
-                  @keyframes floatBox { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-                  @keyframes floatTruck { 0%{transform:translateX(-8px)} 100%{transform:translateX(8px)} }
-                  @keyframes dash { to{stroke-dashoffset:-24} }
-                  @keyframes pulseNode { 0%,100%{r:6;opacity:1} 50%{r:8;opacity:0.7} }
-                  @keyframes scanLine { 0%{transform:translateY(0)} 100%{transform:translateY(52px)} }
-                  @keyframes blinkCheck { 0%,80%,100%{opacity:1} 40%{opacity:0.3} }
-                  @keyframes slidePacket { 0%{stroke-dashoffset:80} 100%{stroke-dashoffset:0} }
-                  .sc-float1 { animation: floatBox 3s ease-in-out infinite; }
-                  .sc-float2 { animation: floatBox 3.4s ease-in-out 0.5s infinite; }
-                  .sc-float3 { animation: floatBox 2.8s ease-in-out 1s infinite; }
-                  .sc-float4 { animation: floatBox 3.2s ease-in-out 1.5s infinite; }
-                  .sc-dash  { animation: dash 1.2s linear infinite; stroke-dasharray:6 4; }
-                  .sc-dash2 { animation: dash 1.6s linear infinite; stroke-dasharray:6 4; }
-                  .sc-dash3 { animation: dash 1s linear infinite; stroke-dasharray:6 4; }
-                  .sc-pulse { animation: pulseNode 2s ease-in-out infinite; }
-                  .sc-scan  { animation: scanLine 1.8s ease-in-out infinite alternate; }
-                  .sc-blink { animation: blinkCheck 2.5s ease-in-out infinite; }
-                  .sc-blink2{ animation: blinkCheck 2.5s ease-in-out 0.8s infinite; }
-                  .sc-blink3{ animation: blinkCheck 2.5s ease-in-out 1.6s infinite; }
+                  @keyframes earthSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+                  @keyframes orbit1 { from{transform:rotate(0deg) translateX(105px) rotate(0deg)} to{transform:rotate(360deg) translateX(105px) rotate(-360deg)} }
+                  @keyframes orbit2 { from{transform:rotate(130deg) translateX(92px) rotate(-130deg)} to{transform:rotate(490deg) translateX(92px) rotate(-490deg)} }
+                  @keyframes orbit3 { from{transform:rotate(250deg) translateX(115px) rotate(-250deg)} to{transform:rotate(610deg) translateX(115px) rotate(-610deg)} }
+                  @keyframes earthPulse { 0%,100%{filter:drop-shadow(0 0 14px rgba(56,189,248,0.45))} 50%{filter:drop-shadow(0 0 26px rgba(56,189,248,0.75))} }
+                  @keyframes starTwinkle { 0%,100%{opacity:0.55} 50%{opacity:0.08} }
+                  @keyframes dotPulse { 0%,100%{r:2;opacity:0.75} 50%{r:3.5;opacity:1} }
+                  @keyframes headingGlow { 0%,100%{text-shadow:0 0 8px rgba(56,189,248,0.5)} 50%{text-shadow:0 0 18px rgba(56,189,248,0.9)} }
+                  .earth-spin { animation: earthSpin 20s linear infinite; transform-origin: 160px 148px; }
+                  .plane1 { animation: orbit1 7s linear infinite; transform-origin: 160px 148px; }
+                  .plane2 { animation: orbit2 11s linear infinite; transform-origin: 160px 148px; }
+                  .plane3 { animation: orbit3 15s linear infinite; transform-origin: 160px 148px; }
+                  .earth-glow { animation: earthPulse 3s ease-in-out infinite; }
+                  .star-t1 { animation: starTwinkle 2.1s ease-in-out infinite; }
+                  .star-t2 { animation: starTwinkle 1.7s ease-in-out 0.4s infinite; }
+                  .star-t3 { animation: starTwinkle 2.5s ease-in-out 0.9s infinite; }
+                  .star-t4 { animation: starTwinkle 1.9s ease-in-out 1.3s infinite; }
+                  .dot-p1 { animation: dotPulse 2.2s ease-in-out infinite; }
+                  .dot-p2 { animation: dotPulse 2.2s ease-in-out 0.6s infinite; }
+                  .dot-p3 { animation: dotPulse 2.2s ease-in-out 1.2s infinite; }
+                  .dot-p4 { animation: dotPulse 2.2s ease-in-out 1.8s infinite; }
+                  .sc-heading { animation: headingGlow 2.5s ease-in-out infinite; }
                 `}</style>
-                <svg viewBox="0 0 420 300" width="100%" height="100%" style={{ maxHeight:300, padding:"16px 24px 16px 0" }} xmlns="http://www.w3.org/2000/svg">
+
+                {/* HEADING ABOVE EARTH */}
+                <div className="sc-heading" style={{ fontFamily:"IBM Plex Mono,monospace", fontSize:11, letterSpacing:"5px", color:"#38bdf8", textTransform:"uppercase", marginBottom:4, textAlign:"center", zIndex:2, position:"relative" }}>
+                  ◈ &nbsp;GLOBAL SUPPLY CHAIN
+                </div>
+
+                <svg viewBox="0 0 320 290" width="100%" style={{ maxHeight:290, zIndex:2, position:"relative" }} xmlns="http://www.w3.org/2000/svg">
                   <defs>
-                    <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                    <filter id="softglow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                    <linearGradient id="nodeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.25"/>
-                      <stop offset="100%" stopColor="#0284c7" stopOpacity="0.08"/>
-                    </linearGradient>
-                    <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.6"/>
-                      <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.1"/>
-                    </linearGradient>
-                    <linearGradient id="redLine" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#ef4444" stopOpacity="0.7"/>
-                      <stop offset="100%" stopColor="#ef4444" stopOpacity="0.1"/>
-                    </linearGradient>
-                    <linearGradient id="greenLine" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#22c55e" stopOpacity="0.7"/>
-                      <stop offset="100%" stopColor="#22c55e" stopOpacity="0.1"/>
-                    </linearGradient>
+                    <radialGradient id="earthG" cx="38%" cy="34%" r="65%">
+                      <stop offset="0%" stopColor="#1d6fa4"/>
+                      <stop offset="45%" stopColor="#0e4a7a"/>
+                      <stop offset="100%" stopColor="#061828"/>
+                    </radialGradient>
+                    <radialGradient id="atmG" cx="50%" cy="50%" r="50%">
+                      <stop offset="78%" stopColor="transparent"/>
+                      <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.2"/>
+                    </radialGradient>
+                    <radialGradient id="spaceG" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="#38bdf8" stopOpacity="0"/>
+                      <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.08"/>
+                    </radialGradient>
+                    <clipPath id="eClip"><circle cx="160" cy="148" r="74"/></clipPath>
+                    <filter id="pGlow"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                   </defs>
 
-                  {/* ── BACKGROUND GRID ── */}
-                  {[0,40,80,120,160,200,240,280].map(y=><line key={y} x1="0" y1={y} x2="420" y2={y} stroke="#161c28" strokeWidth="0.5"/>)}
-                  {[0,60,120,180,240,300,360,420].map(x=><line key={x} x1={x} y1="0" x2={x} y2="300" stroke="#161c28" strokeWidth="0.5"/>)}
-
-                  {/* ── FLOW LINES (dashed animated) ── */}
-                  {/* Warehouse → Hub */}
-                  <line x1="80" y1="110" x2="175" y2="110" stroke="#38bdf8" strokeWidth="1.5" strokeOpacity="0.3" className="sc-dash" filter="url(#glow)"/>
-                  {/* Hub → Van */}
-                  <line x1="220" y1="110" x2="290" y2="110" stroke="#38bdf8" strokeWidth="1.5" strokeOpacity="0.3" className="sc-dash2" filter="url(#glow)"/>
-                  {/* Van → Customer */}
-                  <line x1="335" y1="110" x2="380" y2="110" stroke="#22c55e" strokeWidth="1.5" strokeOpacity="0.5" className="sc-dash3" filter="url(#glow)"/>
-                  {/* Invoice → AI Audit */}
-                  <path d="M 110 170 C 140 170 140 210 170 210" stroke="#f59e0b" strokeWidth="1.5" strokeOpacity="0.4" fill="none" className="sc-dash" filter="url(#glow)"/>
-                  {/* AI Audit → Flagged */}
-                  <path d="M 210 210 C 240 210 240 175 268 175" stroke="#ef4444" strokeWidth="1.5" strokeOpacity="0.5" fill="none" className="sc-dash2" filter="url(#glow)"/>
-                  {/* AI Audit → Verified */}
-                  <path d="M 210 210 C 240 210 240 245 268 245" stroke="#22c55e" strokeWidth="1.5" strokeOpacity="0.5" fill="none" className="sc-dash3" filter="url(#glow)"/>
-
-                  {/* ── NODE 1: WAREHOUSE ── */}
-                  <g className="sc-float1" filter="url(#glow)">
-                    <rect x="18" y="76" width="62" height="68" rx="8" fill="url(#nodeGrad)" stroke="#38bdf8" strokeWidth="1" strokeOpacity="0.4"/>
-                    {/* Warehouse roof */}
-                    <polygon points="49,82 22,96 76,96" fill="none" stroke="#38bdf8" strokeWidth="1.2" strokeOpacity="0.7"/>
-                    {/* Building */}
-                    <rect x="28" y="96" width="42" height="36" rx="2" fill="#0a0c12" stroke="#1c2030" strokeWidth="1"/>
-                    {/* Door */}
-                    <rect x="41" y="110" width="16" height="22" rx="2" fill="#38bdf8" fillOpacity="0.15" stroke="#38bdf8" strokeWidth="0.8" strokeOpacity="0.5"/>
-                    {/* Windows */}
-                    <rect x="31" y="100" width="8" height="6" rx="1" fill="#38bdf8" fillOpacity="0.3"/>
-                    <rect x="59" y="100" width="8" height="6" rx="1" fill="#38bdf8" fillOpacity="0.3"/>
-                    {/* Boxes inside */}
-                    <rect x="28" y="120" width="10" height="8" rx="1" fill="#f59e0b" fillOpacity="0.4" stroke="#f59e0b" strokeWidth="0.5"/>
-                    <rect x="40" y="123" width="8" height="5" rx="1" fill="#38bdf8" fillOpacity="0.3" stroke="#38bdf8" strokeWidth="0.5"/>
-                    <text x="49" y="155" textAnchor="middle" fill="#64748b" fontSize="7" fontFamily="'IBM Plex Mono',monospace">WAREHOUSE</text>
-                  </g>
-
-                  {/* ── NODE 2: COURIER HUB ── */}
-                  <g className="sc-float2" filter="url(#glow)">
-                    <rect x="175" y="76" width="45" height="62" rx="8" fill="url(#nodeGrad)" stroke="#a855f7" strokeWidth="1" strokeOpacity="0.5"/>
-                    {/* Hub icon - sorting conveyor */}
-                    <rect x="183" y="86" width="29" height="14" rx="3" fill="#0a0c12" stroke="#a855f7" strokeWidth="0.8" strokeOpacity="0.5"/>
-                    <rect x="186" y="89" width="7" height="8" rx="1" fill="#f97316" fillOpacity="0.5" stroke="#f97316" strokeWidth="0.5"/>
-                    <rect x="196" y="89" width="7" height="8" rx="1" fill="#3b82f6" fillOpacity="0.5" stroke="#3b82f6" strokeWidth="0.5"/>
-                    <rect x="206" y="89" width="4" height="8" rx="1" fill="#10b981" fillOpacity="0.5" stroke="#10b981" strokeWidth="0.5"/>
-                    {/* Labels */}
-                    <rect x="183" y="104" width="29" height="5" rx="2" fill="#a855f7" fillOpacity="0.12" stroke="#a855f7" strokeWidth="0.5" strokeOpacity="0.3"/>
-                    <text x="197.5" y="108" textAnchor="middle" fill="#a855f7" fontSize="4" fontFamily="'IBM Plex Mono',monospace">SORT</text>
-                    <rect x="183" y="112" width="29" height="12" rx="2" fill="#0a0c12" stroke="#1c2030" strokeWidth="0.5"/>
-                    <text x="184" y="120" fill="#64748b" fontSize="4.5" fontFamily="'IBM Plex Mono',monospace">DL·BD·EE·SF</text>
-                    <text x="197.5" y="148" textAnchor="middle" fill="#64748b" fontSize="7" fontFamily="'IBM Plex Mono',monospace">HUB</text>
-                  </g>
-
-                  {/* ── NODE 3: DELIVERY VAN ── */}
-                  <g className="sc-float3" filter="url(#glow)">
-                    <rect x="290" y="78" width="48" height="58" rx="8" fill="url(#nodeGrad)" stroke="#10b981" strokeWidth="1" strokeOpacity="0.5"/>
-                    {/* Van body */}
-                    <rect x="297" y="88" width="34" height="20" rx="3" fill="#0a0c12" stroke="#10b981" strokeWidth="1" strokeOpacity="0.6"/>
-                    <rect x="297" y="88" width="12" height="20" rx="3" fill="#10b981" fillOpacity="0.12"/>
-                    {/* Windshield */}
-                    <rect x="298" y="90" width="9" height="10" rx="1" fill="#38bdf8" fillOpacity="0.15" stroke="#38bdf8" strokeWidth="0.5" strokeOpacity="0.4"/>
-                    {/* Wheels */}
-                    <circle cx="305" cy="110" r="5" fill="#0a0c12" stroke="#10b981" strokeWidth="1.2" strokeOpacity="0.6"/>
-                    <circle cx="305" cy="110" r="2" fill="#10b981" fillOpacity="0.3"/>
-                    <circle cx="323" cy="110" r="5" fill="#0a0c12" stroke="#10b981" strokeWidth="1.2" strokeOpacity="0.6"/>
-                    <circle cx="323" cy="110" r="2" fill="#10b981" fillOpacity="0.3"/>
-                    {/* Cargo door */}
-                    <rect x="311" y="90" width="18" height="18" rx="1" fill="#10b981" fillOpacity="0.08" stroke="#10b981" strokeWidth="0.5" strokeOpacity="0.4"/>
-                    <line x1="320" y1="90" x2="320" y2="108" stroke="#10b981" strokeWidth="0.5" strokeOpacity="0.3"/>
-                    <text x="314" y="130" textAnchor="middle" fill="#64748b" fontSize="7" fontFamily="'IBM Plex Mono',monospace">DELIVERY</text>
-                  </g>
-
-                  {/* ── NODE 4: CUSTOMER ── */}
-                  <g className="sc-float4" filter="url(#glow)">
-                    <rect x="375" y="86" width="36" height="44" rx="8" fill="url(#nodeGrad)" stroke="#22c55e" strokeWidth="1" strokeOpacity="0.5"/>
-                    {/* House */}
-                    <polygon points="393,92 378,102 408,102" fill="none" stroke="#22c55e" strokeWidth="1" strokeOpacity="0.6"/>
-                    <rect x="382" y="102" width="22" height="16" rx="1" fill="#0a0c12" stroke="#1c2030" strokeWidth="0.8"/>
-                    <rect x="389" y="108" width="8" height="10" rx="1" fill="#22c55e" fillOpacity="0.15" stroke="#22c55e" strokeWidth="0.5" strokeOpacity="0.4"/>
-                    {/* Check badge */}
-                    <circle cx="404" cy="94" r="6" fill="#22c55e" fillOpacity="0.2" stroke="#22c55e" strokeWidth="1" className="sc-blink3"/>
-                    <path d="M401 94 L403 96 L407 91" stroke="#22c55e" strokeWidth="1.2" fill="none" strokeLinecap="round" className="sc-blink3"/>
-                    <text x="393" y="140" textAnchor="middle" fill="#64748b" fontSize="7" fontFamily="'IBM Plex Mono',monospace">CUSTOMER</text>
-                  </g>
-
-                  {/* ── AI AUDIT BOX (center bottom) ── */}
-                  <g className="sc-float2" filter="url(#softglow)">
-                    <rect x="148" y="186" width="74" height="54" rx="8" fill="#0a0f1a" stroke="#38bdf8" strokeWidth="1.2" strokeOpacity="0.6"/>
-                    {/* Scan line animation */}
-                    <clipPath id="auditClip"><rect x="148" y="186" width="74" height="54" rx="8"/></clipPath>
-                    <g clipPath="url(#auditClip)">
-                      <rect x="148" y="186" width="74" height="2" fill="#38bdf8" fillOpacity="0.12" className="sc-scan"/>
-                    </g>
-                    <text x="185" y="200" textAnchor="middle" fill="#38bdf8" fontSize="7" fontFamily="'IBM Plex Mono',monospace" letterSpacing="1">AI AUDIT</text>
-                    {/* Progress bars */}
-                    <rect x="156" y="204" width="58" height="4" rx="2" fill="#1c2030"/>
-                    <rect x="156" y="204" width="52" height="4" rx="2" fill="#38bdf8" fillOpacity="0.7" className="sc-blink"/>
-                    <rect x="156" y="212" width="58" height="4" rx="2" fill="#1c2030"/>
-                    <rect x="156" y="212" width="38" height="4" rx="2" fill="#f59e0b" fillOpacity="0.7" className="sc-blink2"/>
-                    <rect x="156" y="220" width="58" height="4" rx="2" fill="#1c2030"/>
-                    <rect x="156" y="220" width="46" height="4" rx="2" fill="#22c55e" fillOpacity="0.7" className="sc-blink3"/>
-                    <text x="156" y="233" fill="#334155" fontSize="5" fontFamily="'IBM Plex Mono',monospace">7 checks · real-time</text>
-                  </g>
-
-                  {/* ── INVOICE BOX ── */}
-                  <g className="sc-float1">
-                    <rect x="68" y="158" width="50" height="64" rx="6" fill="#0a0c12" stroke="#f59e0b" strokeWidth="1" strokeOpacity="0.5"/>
-                    {/* Header */}
-                    <rect x="68" y="158" width="50" height="12" rx="6" fill="#f59e0b" fillOpacity="0.12"/>
-                    <rect x="68" y="164" width="50" height="6" fill="#f59e0b" fillOpacity="0.12"/>
-                    <text x="93" y="167" textAnchor="middle" fill="#f59e0b" fontSize="5.5" fontFamily="'IBM Plex Mono',monospace">INVOICE</text>
-                    {/* Line items */}
-                    {[0,1,2,3,4,5].map(i=>(
-                      <g key={i}>
-                        <rect x="74" y={174+i*7} width={i%3===0?28:i%3===1?18:22} height="3" rx="1" fill="#334155"/>
-                        <rect x={74+(i%3===0?28:i%3===1?18:22)+2} y={174+i*7} width={i%3===0?10:i%3===1?16:12} height="3" rx="1" fill={i===2?"#ef4444":i===4?"#f59e0b":"#1c2030"} fillOpacity={i===2||i===4?0.8:1}/>
-                      </g>
-                    ))}
-                    <text x="93" y="230" textAnchor="middle" fill="#64748b" fontSize="6" fontFamily="'IBM Plex Mono',monospace">847 lines</text>
-                  </g>
-
-                  {/* ── FLAGGED BOX ── */}
-                  <g className="sc-float3">
-                    <rect x="268" y="158" width="52" height="34" rx="6" fill="#0a0c12" stroke="#ef4444" strokeWidth="1" strokeOpacity="0.5"/>
-                    <text x="294" y="170" textAnchor="middle" fill="#ef4444" fontSize="6" fontFamily="'IBM Plex Mono',monospace">⚠ FLAGGED</text>
-                    <text x="294" y="180" textAnchor="middle" fill="#f87171" fontSize="9" fontFamily="'IBM Plex Mono',monospace" fontWeight="600">₹18,400</text>
-                    <text x="294" y="188" textAnchor="middle" fill="#334155" fontSize="5" fontFamily="'IBM Plex Mono',monospace">overcharge</text>
-                  </g>
-
-                  {/* ── VERIFIED BOX ── */}
-                  <g className="sc-float4">
-                    <rect x="268" y="204" width="52" height="34" rx="6" fill="#0a0c12" stroke="#22c55e" strokeWidth="1" strokeOpacity="0.5"/>
-                    <text x="294" y="216" textAnchor="middle" fill="#22c55e" fontSize="6" fontFamily="'IBM Plex Mono',monospace">✓ VERIFIED</text>
-                    <text x="294" y="227" textAnchor="middle" fill="#4ade80" fontSize="9" fontFamily="'IBM Plex Mono',monospace" fontWeight="600">₹2.4L</text>
-                    <text x="294" y="234" textAnchor="middle" fill="#334155" fontSize="5" fontFamily="'IBM Plex Mono',monospace">safe to pay</text>
-                  </g>
-
-                  {/* ── PROVIDER PILLS (bottom row) ── */}
-                  {[["DL","#f97316",38],["BD","#3b82f6",80],["EE","#10b981",122],["SF","#a855f7",164]].map(([label,color,x])=>(
-                    <g key={label}>
-                      <rect x={x} y="265" width="28" height="14" rx="4" fill={color} fillOpacity="0.12" stroke={color} strokeWidth="0.8" strokeOpacity="0.4"/>
-                      <text x={x+14} y="275" textAnchor="middle" fill={color} fontSize="6.5" fontFamily="'IBM Plex Mono',monospace" fontWeight="600">{label}</text>
-                    </g>
+                  {/* Stars */}
+                  {[[18,22],[40,58],[68,16],[96,40],[118,12],[202,26],[242,54],[272,18],[300,36],[312,72],[28,98],[292,93],[308,128],[14,153],[44,188],[302,168],[288,212],[18,242],[62,254],[292,248],[138,7],[182,19],[255,140],[45,130],[305,200]].map(([x,y],i)=>(
+                    <circle key={i} cx={x} cy={y} r={i%3===0?1.3:0.7} fill="#fff" className={["star-t1","star-t2","star-t3","star-t4"][i%4]} fillOpacity="0.5"/>
                   ))}
 
-                  {/* ── ANIMATED PULSE NODES on flow line ── */}
-                  <circle cx="128" cy="110" r="4" fill="#38bdf8" fillOpacity="0.15" stroke="#38bdf8" strokeWidth="1" className="sc-pulse" filter="url(#glow)"/>
-                  <circle cx="255" cy="110" r="4" fill="#38bdf8" fillOpacity="0.15" stroke="#38bdf8" strokeWidth="1" className="sc-pulse" filter="url(#glow)"/>
-                  <circle cx="370" cy="110" r="4" fill="#22c55e" fillOpacity="0.2" stroke="#22c55e" strokeWidth="1" className="sc-pulse" filter="url(#glow)"/>
+                  {/* Outer ambient glow */}
+                  <circle cx="160" cy="148" r="100" fill="url(#spaceG)"/>
 
-                  {/* ── CORNER LABEL ── */}
-                  <text x="420" y="12" textAnchor="end" fill="#1c2030" fontSize="6" fontFamily="'IBM Plex Mono',monospace">D2C LOGISTICS SUPPLY CHAIN</text>
+                  {/* Orbit ring ellipses */}
+                  <ellipse cx="160" cy="148" rx="105" ry="27" fill="none" stroke="#38bdf8" strokeWidth="0.6" strokeOpacity="0.14" strokeDasharray="5 4"/>
+                  <ellipse cx="160" cy="148" rx="92" ry="35" fill="none" stroke="#38bdf8" strokeWidth="0.6" strokeOpacity="0.11" strokeDasharray="5 4" transform="rotate(-28 160 148)"/>
+                  <ellipse cx="160" cy="148" rx="115" ry="29" fill="none" stroke="#38bdf8" strokeWidth="0.6" strokeOpacity="0.09" strokeDasharray="5 4" transform="rotate(22 160 148)"/>
+
+                  {/* Earth */}
+                  <g className="earth-glow">
+                    <circle cx="160" cy="148" r="74" fill="url(#earthG)"/>
+                    <g clipPath="url(#eClip)" className="earth-spin">
+                      <circle cx="160" cy="148" r="74" fill="#0e4a7a"/>
+                      {/* Eurasia */}
+                      <path d="M152 86 Q174 78 196 85 Q218 92 224 108 Q230 124 220 134 Q208 142 194 138 Q180 133 172 122 Q164 112 158 124 Q153 134 146 128 Q140 120 142 108 Q145 96 152 86Z" fill="#2d8a4e"/>
+                      <path d="M196 85 Q218 76 236 86 Q248 96 242 112 Q236 124 220 134 Q230 124 224 108Z" fill="#3a9a5a"/>
+                      {/* Africa */}
+                      <path d="M158 138 Q170 130 180 140 Q188 152 183 168 Q178 183 166 186 Q154 188 149 175 Q144 160 150 148 Q154 141 158 138Z" fill="#2d8a4e"/>
+                      {/* N America */}
+                      <path d="M84 90 Q98 82 112 90 Q122 99 118 116 Q114 132 102 137 Q90 140 84 129 Q78 115 84 90Z" fill="#2d8a4e"/>
+                      {/* S America */}
+                      <path d="M92 138 Q103 132 112 142 Q118 153 112 170 Q106 182 96 179 Q86 174 85 160 Q83 147 92 138Z" fill="#2d8a4e"/>
+                      {/* Australia */}
+                      <path d="M215 154 Q229 148 238 157 Q246 167 239 177 Q230 184 218 180 Q209 173 212 163Z" fill="#2d8a4e"/>
+                      {/* Ice caps */}
+                      <ellipse cx="160" cy="84" rx="52" ry="8" fill="white" fillOpacity="0.45"/>
+                      <ellipse cx="160" cy="212" rx="48" ry="7" fill="white" fillOpacity="0.38"/>
+                      {/* Clouds */}
+                      <ellipse cx="126" cy="104" rx="18" ry="5" fill="white" fillOpacity="0.11"/>
+                      <ellipse cx="194" cy="152" rx="15" ry="4" fill="white" fillOpacity="0.09"/>
+                      <ellipse cx="144" cy="172" rx="13" ry="3.5" fill="white" fillOpacity="0.08"/>
+                    </g>
+                    {/* Atmosphere glow */}
+                    <circle cx="160" cy="148" r="74" fill="url(#atmG)"/>
+                    {/* Specular */}
+                    <ellipse cx="136" cy="118" rx="24" ry="15" fill="white" fillOpacity="0.055"/>
+                  </g>
+
+                  {/* City dots */}
+                  <circle cx="148" cy="112" r="2.2" fill="#38bdf8" className="dot-p1"/>
+                  <circle cx="172" cy="120" r="2.2" fill="#38bdf8" className="dot-p2"/>
+                  <circle cx="132" cy="144" r="2.2" fill="#38bdf8" className="dot-p3"/>
+                  <circle cx="183" cy="150" r="2.2" fill="#38bdf8" className="dot-p4"/>
+                  <circle cx="157" cy="168" r="2.2" fill="#22c55e" className="dot-p1"/>
+                  <circle cx="168" cy="136" r="2.2" fill="#f59e0b" className="dot-p3"/>
+                  {/* Connection arcs */}
+                  <path d="M148 112 Q160 106 172 120" stroke="#38bdf8" strokeWidth="0.7" strokeOpacity="0.32" fill="none" strokeDasharray="2 2"/>
+                  <path d="M132 144 Q157 138 183 150" stroke="#38bdf8" strokeWidth="0.7" strokeOpacity="0.32" fill="none" strokeDasharray="2 2"/>
+                  <path d="M157 168 Q162 152 168 136" stroke="#22c55e" strokeWidth="0.7" strokeOpacity="0.36" fill="none" strokeDasharray="2 2"/>
+
+                  {/* PLANE 1 — white/blue, equatorial fast */}
+                  <g className="plane1" filter="url(#pGlow)">
+                    <ellipse cx="152" cy="148" rx="16" ry="2.2" fill="#38bdf8" fillOpacity="0.18"/>
+                    <rect x="155" y="145" width="20" height="5.5" rx="2.8" fill="#e2e8f0"/>
+                    <polygon points="161,145 168,145 166,138 160,139" fill="#94a3b8"/>
+                    <polygon points="161,150.5 168,150.5 166,157 160,156" fill="#94a3b8"/>
+                    <polygon points="155,145 158,145 157,141 154,141" fill="#94a3b8"/>
+                    <rect x="162" y="146.5" width="8" height="2.2" rx="1" fill="#38bdf8" fillOpacity="0.65"/>
+                    <circle cx="165" cy="139" r="2.2" fill="#38bdf8" fillOpacity="0.4"/>
+                    <circle cx="165" cy="157" r="2.2" fill="#38bdf8" fillOpacity="0.4"/>
+                  </g>
+
+                  {/* PLANE 2 — amber, tilted medium */}
+                  <g className="plane2" filter="url(#pGlow)">
+                    <ellipse cx="152" cy="148" rx="14" ry="2" fill="#f59e0b" fillOpacity="0.22"/>
+                    <rect x="156" y="145.5" width="17" height="5" rx="2.5" fill="#fde68a"/>
+                    <polygon points="161,145.5 167,145.5 166,139 160,140" fill="#f59e0b"/>
+                    <polygon points="161,150.5 167,150.5 166,157 160,156" fill="#f59e0b"/>
+                    <polygon points="156,145.5 159,145.5 158,141.5 155,141.5" fill="#f59e0b"/>
+                    <rect x="161" y="147" width="7" height="2" rx="1" fill="#f59e0b" fillOpacity="0.7"/>
+                    <circle cx="164" cy="140" r="2" fill="#f59e0b" fillOpacity="0.4"/>
+                    <circle cx="164" cy="157" r="2" fill="#f59e0b" fillOpacity="0.4"/>
+                  </g>
+
+                  {/* PLANE 3 — green, wide slow */}
+                  <g className="plane3" filter="url(#pGlow)">
+                    <ellipse cx="151" cy="148" rx="17" ry="2.4" fill="#22c55e" fillOpacity="0.2"/>
+                    <rect x="154" y="145" width="21" height="6" rx="3" fill="#bbf7d0"/>
+                    <polygon points="160,145 168,145 167,137 159,138" fill="#22c55e"/>
+                    <polygon points="160,151 168,151 167,159 159,158" fill="#22c55e"/>
+                    <polygon points="154,145 157,145 156,140 153,140" fill="#22c55e"/>
+                    <rect x="161" y="146.5" width="9" height="2.5" rx="1" fill="#22c55e" fillOpacity="0.6"/>
+                    <circle cx="166" cy="138" r="2.2" fill="#22c55e" fillOpacity="0.38"/>
+                    <circle cx="166" cy="158" r="2.2" fill="#22c55e" fillOpacity="0.38"/>
+                  </g>
                 </svg>
+
+                {/* Legend below */}
+                <div style={{ display:"flex", gap:14, marginTop:2, zIndex:2, position:"relative" }}>
+                  {[["#38bdf8","Delhivery"],["#f59e0b","BlueDart"],["#22c55e","Ecom Express"]].map(([c,l])=>(
+                    <div key={l} style={{ display:"flex", alignItems:"center", gap:5 }}>
+                      <div style={{ width:8, height:8, borderRadius:"50%", background:c, boxShadow:`0 0 6px ${c}` }}/>
+                      <span style={{ fontFamily:"IBM Plex Mono,monospace", fontSize:9, color:"#475569" }}>{l}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
