@@ -384,19 +384,222 @@ export default function App() {
         {/* DASHBOARD */}
         {tab === "dashboard" && (
           <div className="fade">
-            <div style={{ background:"linear-gradient(135deg,#0a0c12,#0d111a)", border:"1px solid #161c28", borderRadius:14, padding:"48px 52px", marginBottom:22, position:"relative", overflow:"hidden" }}>
-              <div style={{ position:"absolute", top:0, right:0, width:"45%", height:"100%", background:"radial-gradient(ellipse at 75% 50%,rgba(56,189,248,0.07),transparent)", pointerEvents:"none" }} />
-              <div style={{ fontSize:10, color:"#38bdf8", letterSpacing:"4px", textTransform:"uppercase", marginBottom:14, ...S.mono }}>▶ LOGISTICS INTELLIGENCE PLATFORM</div>
-              <h1 style={{ fontSize:42, fontWeight:700, lineHeight:1.1, marginBottom:16, letterSpacing:"-0.5px" }}>Recover Every Rupee<br /><span style={{ color:"#38bdf8" }}>Your Couriers Overcharge.</span></h1>
-              <p style={{ color:"#475569", fontSize:14, maxWidth:500, lineHeight:1.8, marginBottom:28 }}>Upload your logistics invoice and rate contract in <strong style={{ color:"#dde1ea" }}>CSV, Excel, or PDF</strong>. AI extracts every line item, cross-checks against contracted rates, and flags every discrepancy.</p>
-              <div style={{ display:"flex", gap:12 }}>
-                <button className="bp" style={{ padding:"12px 26px", fontSize:14 }} onClick={() => setTab("upload")}>⬆  Upload Invoice</button>
-                <button className="bg" style={{ padding:"12px 26px", fontSize:14 }} onClick={runDemo} disabled={isProcessing}>{isProcessing?"Processing…":"▶  Run Demo"}</button>
+            <div style={{ background:"linear-gradient(135deg,#0a0c12,#0d111a)", border:"1px solid #161c28", borderRadius:14, marginBottom:22, position:"relative", overflow:"hidden", display:"flex", alignItems:"stretch" }}>
+              {/* LEFT: text content */}
+              <div style={{ flex:"0 0 55%", padding:"48px 52px", position:"relative", zIndex:2 }}>
+                <div style={{ fontSize:10, color:"#38bdf8", letterSpacing:"4px", textTransform:"uppercase", marginBottom:14, ...S.mono }}>▶ LOGISTICS INTELLIGENCE PLATFORM</div>
+                <h1 style={{ fontSize:42, fontWeight:700, lineHeight:1.1, marginBottom:16, letterSpacing:"-0.5px" }}>Recover Every Rupee<br /><span style={{ color:"#38bdf8" }}>Your Couriers Overcharge.</span></h1>
+                <p style={{ color:"#475569", fontSize:14, maxWidth:440, lineHeight:1.8, marginBottom:28 }}>Upload your logistics invoice and rate contract in <strong style={{ color:"#dde1ea" }}>CSV, Excel, or PDF</strong>. AI extracts every line item, cross-checks against contracted rates, and flags every discrepancy.</p>
+                <div style={{ display:"flex", gap:12 }}>
+                  <button className="bp" style={{ padding:"12px 26px", fontSize:14 }} onClick={() => setTab("upload")}>⬆  Upload Invoice</button>
+                  <button className="bg" style={{ padding:"12px 26px", fontSize:14 }} onClick={runDemo} disabled={isProcessing}>{isProcessing?"Processing…":"▶  Run Demo"}</button>
+                </div>
+                <div style={{ display:"flex", gap:32, marginTop:36, paddingTop:24, borderTop:"1px solid #161c28" }}>
+                  {[["CSV/Excel/PDF","All formats"],["7 checks","Per AWB"],["₹18,400","Avg overcharges"],["3 min","vs 4 hrs manual"]].map(([v,l]) => (
+                    <div key={l}><div style={{ ...S.mono, fontSize:20, fontWeight:600, color:"#38bdf8" }}>{v}</div><div style={{ fontSize:11, color:"#334155", marginTop:3 }}>{l}</div></div>
+                  ))}
+                </div>
               </div>
-              <div style={{ display:"flex", gap:32, marginTop:36, paddingTop:24, borderTop:"1px solid #161c28" }}>
-                {[["CSV/Excel/PDF","All formats"],["7 checks","Per AWB"],["₹18,400","Avg overcharges"],["3 min","vs 4 hrs manual"]].map(([v,l]) => (
-                  <div key={l}><div style={{ ...S.mono, fontSize:22, fontWeight:600, color:"#38bdf8" }}>{v}</div><div style={{ fontSize:11, color:"#334155", marginTop:3 }}>{l}</div></div>
-                ))}
+
+              {/* RIGHT: Animated supply chain SVG */}
+              <div style={{ flex:"0 0 45%", position:"relative", display:"flex", alignItems:"center", justifyContent:"center", minHeight:320 }}>
+                {/* Ambient glow */}
+                <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse at 60% 50%,rgba(56,189,248,0.08),transparent 70%)", pointerEvents:"none" }} />
+                <style>{`
+                  @keyframes floatBox { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+                  @keyframes floatTruck { 0%{transform:translateX(-8px)} 100%{transform:translateX(8px)} }
+                  @keyframes dash { to{stroke-dashoffset:-24} }
+                  @keyframes pulseNode { 0%,100%{r:6;opacity:1} 50%{r:8;opacity:0.7} }
+                  @keyframes scanLine { 0%{transform:translateY(0)} 100%{transform:translateY(52px)} }
+                  @keyframes blinkCheck { 0%,80%,100%{opacity:1} 40%{opacity:0.3} }
+                  @keyframes slidePacket { 0%{stroke-dashoffset:80} 100%{stroke-dashoffset:0} }
+                  .sc-float1 { animation: floatBox 3s ease-in-out infinite; }
+                  .sc-float2 { animation: floatBox 3.4s ease-in-out 0.5s infinite; }
+                  .sc-float3 { animation: floatBox 2.8s ease-in-out 1s infinite; }
+                  .sc-float4 { animation: floatBox 3.2s ease-in-out 1.5s infinite; }
+                  .sc-dash  { animation: dash 1.2s linear infinite; stroke-dasharray:6 4; }
+                  .sc-dash2 { animation: dash 1.6s linear infinite; stroke-dasharray:6 4; }
+                  .sc-dash3 { animation: dash 1s linear infinite; stroke-dasharray:6 4; }
+                  .sc-pulse { animation: pulseNode 2s ease-in-out infinite; }
+                  .sc-scan  { animation: scanLine 1.8s ease-in-out infinite alternate; }
+                  .sc-blink { animation: blinkCheck 2.5s ease-in-out infinite; }
+                  .sc-blink2{ animation: blinkCheck 2.5s ease-in-out 0.8s infinite; }
+                  .sc-blink3{ animation: blinkCheck 2.5s ease-in-out 1.6s infinite; }
+                `}</style>
+                <svg viewBox="0 0 420 300" width="100%" height="100%" style={{ maxHeight:300, padding:"16px 24px 16px 0" }} xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                    <filter id="softglow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                    <linearGradient id="nodeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.25"/>
+                      <stop offset="100%" stopColor="#0284c7" stopOpacity="0.08"/>
+                    </linearGradient>
+                    <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.6"/>
+                      <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.1"/>
+                    </linearGradient>
+                    <linearGradient id="redLine" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#ef4444" stopOpacity="0.7"/>
+                      <stop offset="100%" stopColor="#ef4444" stopOpacity="0.1"/>
+                    </linearGradient>
+                    <linearGradient id="greenLine" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#22c55e" stopOpacity="0.7"/>
+                      <stop offset="100%" stopColor="#22c55e" stopOpacity="0.1"/>
+                    </linearGradient>
+                  </defs>
+
+                  {/* ── BACKGROUND GRID ── */}
+                  {[0,40,80,120,160,200,240,280].map(y=><line key={y} x1="0" y1={y} x2="420" y2={y} stroke="#161c28" strokeWidth="0.5"/>)}
+                  {[0,60,120,180,240,300,360,420].map(x=><line key={x} x1={x} y1="0" x2={x} y2="300" stroke="#161c28" strokeWidth="0.5"/>)}
+
+                  {/* ── FLOW LINES (dashed animated) ── */}
+                  {/* Warehouse → Hub */}
+                  <line x1="80" y1="110" x2="175" y2="110" stroke="#38bdf8" strokeWidth="1.5" strokeOpacity="0.3" className="sc-dash" filter="url(#glow)"/>
+                  {/* Hub → Van */}
+                  <line x1="220" y1="110" x2="290" y2="110" stroke="#38bdf8" strokeWidth="1.5" strokeOpacity="0.3" className="sc-dash2" filter="url(#glow)"/>
+                  {/* Van → Customer */}
+                  <line x1="335" y1="110" x2="380" y2="110" stroke="#22c55e" strokeWidth="1.5" strokeOpacity="0.5" className="sc-dash3" filter="url(#glow)"/>
+                  {/* Invoice → AI Audit */}
+                  <path d="M 110 170 C 140 170 140 210 170 210" stroke="#f59e0b" strokeWidth="1.5" strokeOpacity="0.4" fill="none" className="sc-dash" filter="url(#glow)"/>
+                  {/* AI Audit → Flagged */}
+                  <path d="M 210 210 C 240 210 240 175 268 175" stroke="#ef4444" strokeWidth="1.5" strokeOpacity="0.5" fill="none" className="sc-dash2" filter="url(#glow)"/>
+                  {/* AI Audit → Verified */}
+                  <path d="M 210 210 C 240 210 240 245 268 245" stroke="#22c55e" strokeWidth="1.5" strokeOpacity="0.5" fill="none" className="sc-dash3" filter="url(#glow)"/>
+
+                  {/* ── NODE 1: WAREHOUSE ── */}
+                  <g className="sc-float1" filter="url(#glow)">
+                    <rect x="18" y="76" width="62" height="68" rx="8" fill="url(#nodeGrad)" stroke="#38bdf8" strokeWidth="1" strokeOpacity="0.4"/>
+                    {/* Warehouse roof */}
+                    <polygon points="49,82 22,96 76,96" fill="none" stroke="#38bdf8" strokeWidth="1.2" strokeOpacity="0.7"/>
+                    {/* Building */}
+                    <rect x="28" y="96" width="42" height="36" rx="2" fill="#0a0c12" stroke="#1c2030" strokeWidth="1"/>
+                    {/* Door */}
+                    <rect x="41" y="110" width="16" height="22" rx="2" fill="#38bdf8" fillOpacity="0.15" stroke="#38bdf8" strokeWidth="0.8" strokeOpacity="0.5"/>
+                    {/* Windows */}
+                    <rect x="31" y="100" width="8" height="6" rx="1" fill="#38bdf8" fillOpacity="0.3"/>
+                    <rect x="59" y="100" width="8" height="6" rx="1" fill="#38bdf8" fillOpacity="0.3"/>
+                    {/* Boxes inside */}
+                    <rect x="28" y="120" width="10" height="8" rx="1" fill="#f59e0b" fillOpacity="0.4" stroke="#f59e0b" strokeWidth="0.5"/>
+                    <rect x="40" y="123" width="8" height="5" rx="1" fill="#38bdf8" fillOpacity="0.3" stroke="#38bdf8" strokeWidth="0.5"/>
+                    <text x="49" y="155" textAnchor="middle" fill="#64748b" fontSize="7" fontFamily="'IBM Plex Mono',monospace">WAREHOUSE</text>
+                  </g>
+
+                  {/* ── NODE 2: COURIER HUB ── */}
+                  <g className="sc-float2" filter="url(#glow)">
+                    <rect x="175" y="76" width="45" height="62" rx="8" fill="url(#nodeGrad)" stroke="#a855f7" strokeWidth="1" strokeOpacity="0.5"/>
+                    {/* Hub icon - sorting conveyor */}
+                    <rect x="183" y="86" width="29" height="14" rx="3" fill="#0a0c12" stroke="#a855f7" strokeWidth="0.8" strokeOpacity="0.5"/>
+                    <rect x="186" y="89" width="7" height="8" rx="1" fill="#f97316" fillOpacity="0.5" stroke="#f97316" strokeWidth="0.5"/>
+                    <rect x="196" y="89" width="7" height="8" rx="1" fill="#3b82f6" fillOpacity="0.5" stroke="#3b82f6" strokeWidth="0.5"/>
+                    <rect x="206" y="89" width="4" height="8" rx="1" fill="#10b981" fillOpacity="0.5" stroke="#10b981" strokeWidth="0.5"/>
+                    {/* Labels */}
+                    <rect x="183" y="104" width="29" height="5" rx="2" fill="#a855f7" fillOpacity="0.12" stroke="#a855f7" strokeWidth="0.5" strokeOpacity="0.3"/>
+                    <text x="197.5" y="108" textAnchor="middle" fill="#a855f7" fontSize="4" fontFamily="'IBM Plex Mono',monospace">SORT</text>
+                    <rect x="183" y="112" width="29" height="12" rx="2" fill="#0a0c12" stroke="#1c2030" strokeWidth="0.5"/>
+                    <text x="184" y="120" fill="#64748b" fontSize="4.5" fontFamily="'IBM Plex Mono',monospace">DL·BD·EE·SF</text>
+                    <text x="197.5" y="148" textAnchor="middle" fill="#64748b" fontSize="7" fontFamily="'IBM Plex Mono',monospace">HUB</text>
+                  </g>
+
+                  {/* ── NODE 3: DELIVERY VAN ── */}
+                  <g className="sc-float3" filter="url(#glow)">
+                    <rect x="290" y="78" width="48" height="58" rx="8" fill="url(#nodeGrad)" stroke="#10b981" strokeWidth="1" strokeOpacity="0.5"/>
+                    {/* Van body */}
+                    <rect x="297" y="88" width="34" height="20" rx="3" fill="#0a0c12" stroke="#10b981" strokeWidth="1" strokeOpacity="0.6"/>
+                    <rect x="297" y="88" width="12" height="20" rx="3" fill="#10b981" fillOpacity="0.12"/>
+                    {/* Windshield */}
+                    <rect x="298" y="90" width="9" height="10" rx="1" fill="#38bdf8" fillOpacity="0.15" stroke="#38bdf8" strokeWidth="0.5" strokeOpacity="0.4"/>
+                    {/* Wheels */}
+                    <circle cx="305" cy="110" r="5" fill="#0a0c12" stroke="#10b981" strokeWidth="1.2" strokeOpacity="0.6"/>
+                    <circle cx="305" cy="110" r="2" fill="#10b981" fillOpacity="0.3"/>
+                    <circle cx="323" cy="110" r="5" fill="#0a0c12" stroke="#10b981" strokeWidth="1.2" strokeOpacity="0.6"/>
+                    <circle cx="323" cy="110" r="2" fill="#10b981" fillOpacity="0.3"/>
+                    {/* Cargo door */}
+                    <rect x="311" y="90" width="18" height="18" rx="1" fill="#10b981" fillOpacity="0.08" stroke="#10b981" strokeWidth="0.5" strokeOpacity="0.4"/>
+                    <line x1="320" y1="90" x2="320" y2="108" stroke="#10b981" strokeWidth="0.5" strokeOpacity="0.3"/>
+                    <text x="314" y="130" textAnchor="middle" fill="#64748b" fontSize="7" fontFamily="'IBM Plex Mono',monospace">DELIVERY</text>
+                  </g>
+
+                  {/* ── NODE 4: CUSTOMER ── */}
+                  <g className="sc-float4" filter="url(#glow)">
+                    <rect x="375" y="86" width="36" height="44" rx="8" fill="url(#nodeGrad)" stroke="#22c55e" strokeWidth="1" strokeOpacity="0.5"/>
+                    {/* House */}
+                    <polygon points="393,92 378,102 408,102" fill="none" stroke="#22c55e" strokeWidth="1" strokeOpacity="0.6"/>
+                    <rect x="382" y="102" width="22" height="16" rx="1" fill="#0a0c12" stroke="#1c2030" strokeWidth="0.8"/>
+                    <rect x="389" y="108" width="8" height="10" rx="1" fill="#22c55e" fillOpacity="0.15" stroke="#22c55e" strokeWidth="0.5" strokeOpacity="0.4"/>
+                    {/* Check badge */}
+                    <circle cx="404" cy="94" r="6" fill="#22c55e" fillOpacity="0.2" stroke="#22c55e" strokeWidth="1" className="sc-blink3"/>
+                    <path d="M401 94 L403 96 L407 91" stroke="#22c55e" strokeWidth="1.2" fill="none" strokeLinecap="round" className="sc-blink3"/>
+                    <text x="393" y="140" textAnchor="middle" fill="#64748b" fontSize="7" fontFamily="'IBM Plex Mono',monospace">CUSTOMER</text>
+                  </g>
+
+                  {/* ── AI AUDIT BOX (center bottom) ── */}
+                  <g className="sc-float2" filter="url(#softglow)">
+                    <rect x="148" y="186" width="74" height="54" rx="8" fill="#0a0f1a" stroke="#38bdf8" strokeWidth="1.2" strokeOpacity="0.6"/>
+                    {/* Scan line animation */}
+                    <clipPath id="auditClip"><rect x="148" y="186" width="74" height="54" rx="8"/></clipPath>
+                    <g clipPath="url(#auditClip)">
+                      <rect x="148" y="186" width="74" height="2" fill="#38bdf8" fillOpacity="0.12" className="sc-scan"/>
+                    </g>
+                    <text x="185" y="200" textAnchor="middle" fill="#38bdf8" fontSize="7" fontFamily="'IBM Plex Mono',monospace" letterSpacing="1">AI AUDIT</text>
+                    {/* Progress bars */}
+                    <rect x="156" y="204" width="58" height="4" rx="2" fill="#1c2030"/>
+                    <rect x="156" y="204" width="52" height="4" rx="2" fill="#38bdf8" fillOpacity="0.7" className="sc-blink"/>
+                    <rect x="156" y="212" width="58" height="4" rx="2" fill="#1c2030"/>
+                    <rect x="156" y="212" width="38" height="4" rx="2" fill="#f59e0b" fillOpacity="0.7" className="sc-blink2"/>
+                    <rect x="156" y="220" width="58" height="4" rx="2" fill="#1c2030"/>
+                    <rect x="156" y="220" width="46" height="4" rx="2" fill="#22c55e" fillOpacity="0.7" className="sc-blink3"/>
+                    <text x="156" y="233" fill="#334155" fontSize="5" fontFamily="'IBM Plex Mono',monospace">7 checks · real-time</text>
+                  </g>
+
+                  {/* ── INVOICE BOX ── */}
+                  <g className="sc-float1">
+                    <rect x="68" y="158" width="50" height="64" rx="6" fill="#0a0c12" stroke="#f59e0b" strokeWidth="1" strokeOpacity="0.5"/>
+                    {/* Header */}
+                    <rect x="68" y="158" width="50" height="12" rx="6" fill="#f59e0b" fillOpacity="0.12"/>
+                    <rect x="68" y="164" width="50" height="6" fill="#f59e0b" fillOpacity="0.12"/>
+                    <text x="93" y="167" textAnchor="middle" fill="#f59e0b" fontSize="5.5" fontFamily="'IBM Plex Mono',monospace">INVOICE</text>
+                    {/* Line items */}
+                    {[0,1,2,3,4,5].map(i=>(
+                      <g key={i}>
+                        <rect x="74" y={174+i*7} width={i%3===0?28:i%3===1?18:22} height="3" rx="1" fill="#334155"/>
+                        <rect x={74+(i%3===0?28:i%3===1?18:22)+2} y={174+i*7} width={i%3===0?10:i%3===1?16:12} height="3" rx="1" fill={i===2?"#ef4444":i===4?"#f59e0b":"#1c2030"} fillOpacity={i===2||i===4?0.8:1}/>
+                      </g>
+                    ))}
+                    <text x="93" y="230" textAnchor="middle" fill="#64748b" fontSize="6" fontFamily="'IBM Plex Mono',monospace">847 lines</text>
+                  </g>
+
+                  {/* ── FLAGGED BOX ── */}
+                  <g className="sc-float3">
+                    <rect x="268" y="158" width="52" height="34" rx="6" fill="#0a0c12" stroke="#ef4444" strokeWidth="1" strokeOpacity="0.5"/>
+                    <text x="294" y="170" textAnchor="middle" fill="#ef4444" fontSize="6" fontFamily="'IBM Plex Mono',monospace">⚠ FLAGGED</text>
+                    <text x="294" y="180" textAnchor="middle" fill="#f87171" fontSize="9" fontFamily="'IBM Plex Mono',monospace" fontWeight="600">₹18,400</text>
+                    <text x="294" y="188" textAnchor="middle" fill="#334155" fontSize="5" fontFamily="'IBM Plex Mono',monospace">overcharge</text>
+                  </g>
+
+                  {/* ── VERIFIED BOX ── */}
+                  <g className="sc-float4">
+                    <rect x="268" y="204" width="52" height="34" rx="6" fill="#0a0c12" stroke="#22c55e" strokeWidth="1" strokeOpacity="0.5"/>
+                    <text x="294" y="216" textAnchor="middle" fill="#22c55e" fontSize="6" fontFamily="'IBM Plex Mono',monospace">✓ VERIFIED</text>
+                    <text x="294" y="227" textAnchor="middle" fill="#4ade80" fontSize="9" fontFamily="'IBM Plex Mono',monospace" fontWeight="600">₹2.4L</text>
+                    <text x="294" y="234" textAnchor="middle" fill="#334155" fontSize="5" fontFamily="'IBM Plex Mono',monospace">safe to pay</text>
+                  </g>
+
+                  {/* ── PROVIDER PILLS (bottom row) ── */}
+                  {[["DL","#f97316",38],["BD","#3b82f6",80],["EE","#10b981",122],["SF","#a855f7",164]].map(([label,color,x])=>(
+                    <g key={label}>
+                      <rect x={x} y="265" width="28" height="14" rx="4" fill={color} fillOpacity="0.12" stroke={color} strokeWidth="0.8" strokeOpacity="0.4"/>
+                      <text x={x+14} y="275" textAnchor="middle" fill={color} fontSize="6.5" fontFamily="'IBM Plex Mono',monospace" fontWeight="600">{label}</text>
+                    </g>
+                  ))}
+
+                  {/* ── ANIMATED PULSE NODES on flow line ── */}
+                  <circle cx="128" cy="110" r="4" fill="#38bdf8" fillOpacity="0.15" stroke="#38bdf8" strokeWidth="1" className="sc-pulse" filter="url(#glow)"/>
+                  <circle cx="255" cy="110" r="4" fill="#38bdf8" fillOpacity="0.15" stroke="#38bdf8" strokeWidth="1" className="sc-pulse" filter="url(#glow)"/>
+                  <circle cx="370" cy="110" r="4" fill="#22c55e" fillOpacity="0.2" stroke="#22c55e" strokeWidth="1" className="sc-pulse" filter="url(#glow)"/>
+
+                  {/* ── CORNER LABEL ── */}
+                  <text x="420" y="12" textAnchor="end" fill="#1c2030" fontSize="6" fontFamily="'IBM Plex Mono',monospace">D2C LOGISTICS SUPPLY CHAIN</text>
+                </svg>
               </div>
             </div>
 
