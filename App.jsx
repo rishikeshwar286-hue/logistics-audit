@@ -209,6 +209,218 @@ function downloadCSV(rows, filename) {
   a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// FLOATING CHAT BUBBLE — General Logistics Q&A
+// ══════════════════════════════════════════════════════════════════════════════
+const QUICK_QUESTIONS = [
+  "What is fuel surcharge in logistics?",
+  "How is COD fee calculated?",
+  "What does RTO mean?",
+  "How to dispute a courier overcharge?",
+  "Difference between weight slab vs dead weight?",
+  "What is docket charge?",
+  "How do courier zones work in India?",
+  "What is a rate card in shipping?",
+];
+
+const SYSTEM_PROMPT = `You are an expert logistics assistant specializing in Indian D2C e-commerce shipping. You help brands and supply chain teams understand:
+- Courier billing: freight, fuel surcharge, COD fees, RTO charges, docket fees, dimensional weight
+- How to dispute overcharges with providers like Delhivery, BlueDart, Ecom Express, Shadowfax
+- How Indian courier zones (A-E) work, weight slabs, and rate cards
+- Logistics terminology, SLAs, AWB numbers, manifests, NDR, IVR calls
+- Best practices for reducing shipping costs
+
+Be concise (2-4 sentences unless asked for detail), use ₹ for currency, and give practical, actionable answers. You don't need audit data — answer from your logistics expertise.`;
+
+function FloatingChat({ apiKey }) {
+  const [open, setOpen]       = useState(false);
+  const [msgs, setMsgs]       = useState([]);
+  const [input, setInput]     = useState("");
+  const [loading, setLoading] = useState(false);
+  const [unread, setUnread]   = useState(0);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const bottomRef = useRef();
+  const inputRef  = useRef();
+
+  React.useEffect(() => {
+    if (open) { setUnread(0); setShowWelcome(false); setTimeout(() => bottomRef.current?.scrollIntoView({ behavior:"smooth" }), 100); }
+  }, [open, msgs]);
+
+  const send = async (text) => {
+    const q = (text || input).trim();
+    if (!q || loading) return;
+    setInput("");
+    const userMsg  = { role:"user", content:q };
+    const newMsgs  = [...msgs, userMsg];
+    setMsgs(newMsgs);
+    setLoading(true);
+
+    let reply = "Sorry, I couldn't connect. Please check your API key in Vercel settings.";
+    if (apiKey) {
+      try {
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json", "x-api-key":apiKey, "anthropic-version":"2023-06-01", "anthropic-dangerous-direct-browser-access":"true" },
+          body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:600, system:SYSTEM_PROMPT, messages:newMsgs.map(m=>({ role:m.role, content:m.content })) }),
+        });
+        const d = await res.json();
+        if (d.content?.[0]?.text) reply = d.content[0].text;
+        else if (d.error) reply = `API Error: ${d.error.message}`;
+      } catch(e) { reply = `Network error: ${e.message}`; }
+    } else {
+      reply = "⚠ No API key configured. Add VITE_ANTHROPIC_API_KEY in your Vercel environment variables.";
+    }
+
+    setMsgs(p => [...p, { role:"assistant", content:reply }]);
+    setLoading(false);
+    if (!open) setUnread(u => u + 1);
+  };
+
+  const mono = "'IBM Plex Mono',monospace";
+
+  return (
+    <>
+      <style>{`
+        @keyframes bubblePop { 0%{transform:scale(0.5);opacity:0} 70%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+        @keyframes chatSlideUp { from{opacity:0;transform:translateY(20px) scale(0.96)} to{opacity:1;transform:translateY(0) scale(1)} }
+        @keyframes pulseGlow { 0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,0.5)} 50%{box-shadow:0 0 0 8px rgba(56,189,248,0)} }
+        @keyframes typeDot { 0%,80%,100%{transform:translateY(0);opacity:0.4} 40%{transform:translateY(-5px);opacity:1} }
+        @keyframes badgePop { 0%{transform:scale(0)} 100%{transform:scale(1)} }
+        .fc-bubble { animation: bubblePop 0.35s cubic-bezier(0.34,1.56,0.64,1) both; }
+        .fc-window { animation: chatSlideUp 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+        .fc-glow { animation: pulseGlow 2s ease-in-out infinite; }
+        .fc-badge { animation: badgePop 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+        .fc-d1 { animation: typeDot 1.2s ease-in-out 0s infinite; }
+        .fc-d2 { animation: typeDot 1.2s ease-in-out 0.2s infinite; }
+        .fc-d3 { animation: typeDot 1.2s ease-in-out 0.4s infinite; }
+        .fc-btn { background:none; border:none; cursor:pointer; font-family:inherit; transition:all 0.18s; }
+        .fc-inp:focus { outline:none; border-color:#38bdf8 !important; }
+        .fc-qbtn:hover { background:rgba(56,189,248,0.1) !important; border-color:rgba(56,189,248,0.35) !important; color:#38bdf8 !important; }
+      `}</style>
+
+      {/* FLOATING BUTTON */}
+      <div style={{ position:"fixed", bottom:28, right:28, zIndex:9999 }}>
+        {/* Unread badge */}
+        {unread > 0 && !open && (
+          <div className="fc-badge" style={{ position:"absolute", top:-6, right:-6, width:20, height:20, borderRadius:"50%", background:"#ef4444", color:"#fff", fontSize:11, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", zIndex:10000, border:"2px solid #060709" }}>{unread}</div>
+        )}
+
+        {/* Welcome tooltip */}
+        {showWelcome && !open && (
+          <div style={{ position:"absolute", bottom:62, right:0, background:"#0c0f15", border:"1px solid rgba(56,189,248,0.3)", borderRadius:10, padding:"10px 14px", whiteSpace:"nowrap", fontSize:12, color:"#dde1ea", boxShadow:"0 8px 32px rgba(0,0,0,0.5)" }}>
+            <div style={{ fontWeight:600, marginBottom:2 }}>Ask me anything 💬</div>
+            <div style={{ fontSize:11, color:"#475569" }}>Logistics Q&A · Instant answers</div>
+            <div style={{ position:"absolute", bottom:-6, right:18, width:12, height:12, background:"#0c0f15", border:"1px solid rgba(56,189,248,0.3)", borderRight:"none", borderTop:"none", transform:"rotate(-45deg)" }}/>
+          </div>
+        )}
+
+        <button
+          className={`fc-glow`}
+          onClick={() => setOpen(o => !o)}
+          style={{ width:56, height:56, borderRadius:"50%", background:"linear-gradient(135deg,#38bdf8,#0284c7)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, boxShadow:"0 4px 20px rgba(56,189,248,0.4)", transition:"transform 0.2s", transform: open ? "rotate(45deg) scale(0.95)" : "scale(1)" }}
+        >
+          {open ? "✕" : "💬"}
+        </button>
+      </div>
+
+      {/* CHAT WINDOW */}
+      {open && (
+        <div className="fc-window" style={{ position:"fixed", bottom:98, right:28, width:380, height:520, zIndex:9998, display:"flex", flexDirection:"column", background:"#0c0f15", border:"1px solid rgba(56,189,248,0.2)", borderRadius:16, overflow:"hidden", boxShadow:"0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(56,189,248,0.08)" }}>
+
+          {/* Header */}
+          <div style={{ background:"linear-gradient(135deg,#0a0f1a,#0d1520)", borderBottom:"1px solid #161c28", padding:"14px 18px", display:"flex", alignItems:"center", gap:12, flexShrink:0 }}>
+            <div style={{ width:36, height:36, borderRadius:"50%", background:"linear-gradient(135deg,#38bdf8,#0284c7)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>⚡</div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontWeight:700, fontSize:14, color:"#dde1ea" }}>LogisticsAI Assistant</div>
+              <div style={{ fontSize:11, color:"#22c55e", display:"flex", alignItems:"center", gap:5 }}>
+                <span style={{ width:6, height:6, borderRadius:"50%", background:"#22c55e", display:"inline-block" }}/>
+                Online · Logistics Expert
+              </div>
+            </div>
+            <button className="fc-btn" onClick={() => setMsgs([])} style={{ fontSize:11, color:"#334155", padding:"4px 8px", borderRadius:4, border:"1px solid #1c2030" }} title="Clear chat">↺</button>
+          </div>
+
+          {/* Messages area */}
+          <div style={{ flex:1, overflowY:"auto", padding:"14px 16px", display:"flex", flexDirection:"column", gap:12 }}>
+
+            {/* Empty state */}
+            {msgs.length === 0 && (
+              <div>
+                <div style={{ textAlign:"center", padding:"12px 0 16px" }}>
+                  <div style={{ fontSize:28, marginBottom:8 }}>🚚</div>
+                  <div style={{ fontWeight:600, fontSize:13, color:"#dde1ea", marginBottom:4 }}>Logistics Q&A</div>
+                  <div style={{ fontSize:11, color:"#475569", lineHeight:1.6 }}>Ask me anything about courier billing, shipping terms, overcharge disputes, and more.</div>
+                </div>
+                <div style={{ fontSize:10, color:"#334155", fontFamily:mono, textTransform:"uppercase", letterSpacing:"1px", marginBottom:8 }}>Quick questions</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                  {QUICK_QUESTIONS.map(q => (
+                    <button key={q} className="fc-btn fc-qbtn" onClick={() => send(q)}
+                      style={{ textAlign:"left", padding:"8px 12px", background:"#0a0c12", border:"1px solid #161c28", borderRadius:8, fontSize:12, color:"#64748b", lineHeight:1.4 }}>
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Messages */}
+            {msgs.map((m, i) => (
+              <div key={i} style={{ display:"flex", flexDirection:m.role==="user"?"row-reverse":"row", gap:8, alignItems:"flex-end" }}>
+                {m.role==="assistant" && (
+                  <div style={{ width:26, height:26, borderRadius:"50%", background:"linear-gradient(135deg,#38bdf8,#0284c7)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, flexShrink:0, marginBottom:2 }}>⚡</div>
+                )}
+                <div style={{
+                  maxWidth:"82%",
+                  background: m.role==="user" ? "linear-gradient(135deg,#0284c7,#0369a1)" : "#0a0c12",
+                  border: m.role==="user" ? "none" : "1px solid #161c28",
+                  borderRadius: m.role==="user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                  padding:"10px 14px", fontSize:12.5, lineHeight:1.7, color:"#dde1ea", whiteSpace:"pre-wrap",
+                  boxShadow: m.role==="user" ? "0 2px 12px rgba(2,132,199,0.3)" : "none"
+                }}>
+                  {m.content}
+                </div>
+              </div>
+            ))}
+
+            {/* Typing indicator */}
+            {loading && (
+              <div style={{ display:"flex", gap:8, alignItems:"flex-end" }}>
+                <div style={{ width:26, height:26, borderRadius:"50%", background:"linear-gradient(135deg,#38bdf8,#0284c7)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, flexShrink:0 }}>⚡</div>
+                <div style={{ background:"#0a0c12", border:"1px solid #161c28", borderRadius:"16px 16px 16px 4px", padding:"12px 16px", display:"flex", gap:5, alignItems:"center" }}>
+                  <div className="fc-d1" style={{ width:7, height:7, borderRadius:"50%", background:"#38bdf8" }}/>
+                  <div className="fc-d2" style={{ width:7, height:7, borderRadius:"50%", background:"#38bdf8" }}/>
+                  <div className="fc-d3" style={{ width:7, height:7, borderRadius:"50%", background:"#38bdf8" }}/>
+                </div>
+              </div>
+            )}
+            <div ref={bottomRef}/>
+          </div>
+
+          {/* Input bar */}
+          <div style={{ borderTop:"1px solid #161c28", padding:"12px 14px", display:"flex", gap:8, flexShrink:0, background:"#0a0c12" }}>
+            <input
+              ref={inputRef}
+              className="fc-inp"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => { if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+              placeholder="Ask a logistics question…"
+              style={{ flex:1, background:"#0c0f15", border:"1px solid #1c2030", borderRadius:10, padding:"9px 14px", color:"#dde1ea", fontSize:12.5, fontFamily:"inherit" }}
+            />
+            <button
+              onClick={() => send()}
+              disabled={!input.trim() || loading}
+              style={{ width:40, height:40, borderRadius:10, background: input.trim() && !loading ? "linear-gradient(135deg,#38bdf8,#0284c7)" : "#1c2030", border:"none", cursor: input.trim() && !loading ? "pointer" : "not-allowed", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, transition:"all 0.2s", flexShrink:0 }}
+            >
+              {loading ? "…" : "↑"}
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function App() {
   const [tab, setTab]             = useState("dashboard");
   const [auditData, setAuditData] = useState([]);
@@ -220,7 +432,10 @@ export default function App() {
   const [files, setFiles]         = useState({ invoice:null, contract:null });
   const [filterProvider, setFilterProvider] = useState("ALL");
   const [trackAWB, setTrackAWB]   = useState(null);
-  const invRef = useRef(); const conRef = useRef();
+  const [chatMessages, setChatMessages] = useState([{ role:"assistant", content:"Hi! I'm your LogisticsAI analyst. Ask me about overcharges, request a dispute email, compare provider performance, or anything about your audit. What would you like to know?" }]);
+  const [chatInput, setChatInput] = useState("");
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const invRef = useRef(); const conRef = useRef(); const chatEndRef = useRef();
   const log = msg => setParseLog(p => [...p, msg]);
 
   const flagged       = auditData.filter(r => r.status === "FLAGGED");
@@ -329,6 +544,24 @@ export default function App() {
     downloadCSV([hdr,...rows], `discrepancy_report_${new Date().toISOString().slice(0,10)}.csv`);
   };
 
+  // Auto-scroll chat
+  React.useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior:"smooth" }); }, [chatMessages]);
+
+  const handleChat = useCallback(async () => {
+    if (!chatInput.trim() || isChatLoading) return;
+    const userMsg = { role:"user", content:chatInput };
+    setChatMessages(p => [...p, userMsg]);
+    setChatInput("");
+    setIsChatLoading(true);
+    const summary = auditData.length > 0
+      ? `Audit summary: ${auditData.length} shipments, ₹${totalBilled.toLocaleString()} billed, ₹${totalOver.toLocaleString()} overcharged, ${flagged.length} flagged AWBs. Mode: ${isDemo?"DEMO":"REAL uploaded invoice"}. Providers: ${[...new Set(auditData.map(r=>r.provider))].join(", ")}.`
+      : "No audit data loaded yet.";
+    const system = `You are an expert logistics invoice auditing analyst for Indian D2C brands. Help supply chain and finance teams understand overcharges, draft dispute letters, compare provider performance, and optimize logistics spend. ${summary} Be concise, professional, use ₹ for currency. If asked to draft a dispute email, write a complete professional email.`;
+    const reply = await callClaude([...chatMessages, userMsg].map(m => ({ role:m.role, content:m.content })), system, 1200);
+    setChatMessages(p => [...p, { role:"assistant", content: reply || "Sorry, I couldn't get a response. Please check your API key in Vercel settings." }]);
+    setIsChatLoading(false);
+  }, [chatInput, isChatLoading, chatMessages, auditData, totalBilled, totalOver, flagged, isDemo]);
+
   const S = {
     page:{ fontFamily:"'IBM Plex Sans','Segoe UI',sans-serif", background:"#060709", minHeight:"100vh", color:"#dde1ea" },
     card:{ background:"#0c0f15", border:"1px solid #161c28", borderRadius:10 },
@@ -368,7 +601,7 @@ export default function App() {
             </div>
           </div>
           <nav style={{ display:"flex", gap:2 }}>
-            {[["dashboard","⬡ Dashboard"],["upload","⬆ Upload"],["audit","⚑ Audit"],["tracking","◎ Tracking"]].map(([id,label]) => (
+            {[["dashboard","⬡ Dashboard"],["upload","⬆ Upload"],["audit","⚑ Audit"],["tracking","◎ Tracking"],["chat","◈ AI Chat"]].map(([id,label]) => (
               <button key={id} className={`nb ${tab===id?"na":""}`} onClick={() => setTab(id)}>{label}</button>
             ))}
           </nav>
@@ -796,11 +1029,106 @@ export default function App() {
             )}
           </div>
         )}
+
+        {/* ══ AI CHAT ══ */}
+        {tab === "chat" && (
+          <div className="fade" style={{ maxWidth:860, margin:"0 auto" }}>
+            <div style={{ marginBottom:20 }}>
+              <div style={{ fontSize:10, color:"#38bdf8", letterSpacing:"3px", textTransform:"uppercase", ...S.mono, marginBottom:8 }}>▶ AI ANALYST</div>
+              <h2 style={{ fontSize:22, fontWeight:700 }}>Logistics AI Chat</h2>
+              <p style={{ color:"#475569", fontSize:13, marginTop:5, lineHeight:1.7 }}>
+                Ask about overcharges, get dispute emails drafted, compare provider performance, or analyze your audit data.
+              </p>
+            </div>
+
+            {!API_KEY && (
+              <div style={{ background:"rgba(251,191,36,0.07)", border:"1px solid rgba(251,191,36,0.25)", borderRadius:8, padding:"12px 16px", marginBottom:16, fontSize:12, color:"#fbbf24" }}>
+                ⚠ No API key configured. Add <strong>VITE_ANTHROPIC_API_KEY</strong> in your Vercel environment variables to enable AI responses.
+              </div>
+            )}
+
+            {/* Suggested prompts */}
+            {chatMessages.length <= 1 && (
+              <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:16 }}>
+                {[
+                  "Summarise the overcharges found",
+                  "Draft a dispute email to Delhivery",
+                  "Which provider has the most errors?",
+                  "What is COD fee overcharge?",
+                  "How do I read the audit report?",
+                  "Which AWBs are duplicates?",
+                ].map(q => (
+                  <button key={q} onClick={() => { setChatInput(q); }} style={{ background:"#0c0f15", border:"1px solid #1c2030", borderRadius:20, padding:"6px 14px", fontSize:11, color:"#64748b", cursor:"pointer", fontFamily:"inherit", transition:"all 0.2s" }}
+                    onMouseOver={e=>{ e.target.style.borderColor="#38bdf8"; e.target.style.color="#38bdf8"; }}
+                    onMouseOut={e=>{ e.target.style.borderColor="#1c2030"; e.target.style.color="#64748b"; }}>
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Chat window */}
+            <div style={{ ...S.card, height:440, overflowY:"auto", padding:"18px 20px", marginBottom:12, display:"flex", flexDirection:"column", gap:14 }}>
+              {chatMessages.map((msg, i) => (
+                <div key={i} style={{ display:"flex", gap:12, flexDirection:msg.role==="user"?"row-reverse":"row", alignItems:"flex-start" }}>
+                  {/* Avatar */}
+                  <div style={{ flexShrink:0, width:32, height:32, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14,
+                    background: msg.role==="user" ? "linear-gradient(135deg,#38bdf8,#0284c7)" : "#0c0f15",
+                    border: msg.role==="assistant" ? "1px solid #1c2030" : "none",
+                    color: msg.role==="user" ? "#060709" : "#38bdf8" }}>
+                    {msg.role==="user" ? "U" : "⚡"}
+                  </div>
+                  {/* Bubble */}
+                  <div style={{ maxWidth:"78%", background: msg.role==="user" ? "rgba(56,189,248,0.08)" : "#0a0c12",
+                    border: `1px solid ${msg.role==="user" ? "rgba(56,189,248,0.2)" : "#161c28"}`,
+                    borderRadius: msg.role==="user" ? "12px 4px 12px 12px" : "4px 12px 12px 12px",
+                    padding:"12px 16px", fontSize:13, lineHeight:1.75, color:"#dde1ea", whiteSpace:"pre-wrap" }}>
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+              {isChatLoading && (
+                <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
+                  <div style={{ flexShrink:0, width:32, height:32, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, background:"#0c0f15", border:"1px solid #1c2030", color:"#38bdf8" }}>⚡</div>
+                  <div style={{ background:"#0a0c12", border:"1px solid #161c28", borderRadius:"4px 12px 12px 12px", padding:"12px 18px" }}>
+                    <div style={{ display:"flex", gap:5 }}>
+                      {[0,1,2].map(i => <div key={i} style={{ width:7, height:7, borderRadius:"50%", background:"#38bdf8", animation:`dotBounce 1.2s ease-in-out ${i*0.2}s infinite` }}/>)}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef}/>
+            </div>
+
+            {/* Input bar */}
+            <div style={{ display:"flex", gap:10 }}>
+              <input
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                onKeyDown={e => e.key==="Enter" && !e.shiftKey && handleChat()}
+                placeholder="Ask about your audit, overcharges, or request a dispute email…"
+                style={{ flex:1, background:"#0c0f15", border:"1px solid #1c2030", borderRadius:8, padding:"12px 16px", color:"#dde1ea", fontSize:13, fontFamily:"inherit", outline:"none", transition:"border-color 0.2s" }}
+                onFocus={e=>e.target.style.borderColor="#38bdf8"}
+                onBlur={e=>e.target.style.borderColor="#1c2030"}
+              />
+              <button className="bp" style={{ padding:"12px 22px", fontSize:14, flexShrink:0 }} onClick={handleChat} disabled={isChatLoading || !chatInput.trim()}>
+                {isChatLoading ? "…" : "Send ↵"}
+              </button>
+            </div>
+            <div style={{ fontSize:11, color:"#1c2030", marginTop:8, ...S.mono }}>Press Enter to send · Powered by Claude Sonnet</div>
+
+            <style>{`@keyframes dotBounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }`}</style>
+          </div>
+        )}
+
       </div>
 
       <div style={{ borderTop:"1px solid #0c0f15", padding:"12px 24px", textAlign:"center" }}>
         <span style={{ fontSize:9, color:"#161c28", ...S.mono, letterSpacing:"2px" }}>LOGISTICSAI · CSV · EXCEL · PDF · DELHIVERY · BLUEDART · ECOM EXPRESS · SHADOWFAX</span>
       </div>
+
+      {/* ══ FLOATING CHAT BUBBLE ══ */}
+      <FloatingChat apiKey={API_KEY} />
     </div>
   );
 }
