@@ -209,6 +209,209 @@ function downloadCSV(rows, filename) {
   a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// ENHANCED TOPBAR COMPONENT
+// ══════════════════════════════════════════════════════════════════════════════
+function TopBar({ tab, setTab, auditData, isDemo, totalOver, totalBilled, flagged, ok, S }) {
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [tickerIdx, setTickerIdx]     = useState(0);
+  const profileRef = useRef();
+
+  const cleanRate = auditData.length > 0 ? ((ok.length / auditData.length) * 100).toFixed(1) : null;
+
+  const tickerItems = auditData.length > 0 ? [
+    { icon:"📦", label:"Shipments Audited",  val: auditData.length.toLocaleString(),           color:"#dde1ea" },
+    { icon:"⚠",  label:"Flagged AWBs",       val: flagged.length.toLocaleString(),             color:"#f87171" },
+    { icon:"💸", label:"Overcharges Found",  val: `₹${totalOver.toLocaleString()}`,            color:"#f87171" },
+    { icon:"✅", label:"Verified Amount",    val: `₹${(totalBilled-totalOver).toLocaleString()}`, color:"#4ade80" },
+    { icon:"🎯", label:"Clean Rate",         val: `${cleanRate}%`,                             color:"#38bdf8" },
+    { icon:"📋", label:"AWBs Processed",     val: auditData.length.toLocaleString(),           color:"#a855f7" },
+  ] : [];
+
+  React.useEffect(() => {
+    if (tickerItems.length === 0) return;
+    const t = setInterval(() => setTickerIdx(i => (i + 1) % tickerItems.length), 2600);
+    return () => clearInterval(t);
+  }, [tickerItems.length]);
+
+  React.useEffect(() => {
+    const handler = e => { if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const TABS = [["dashboard","⬡","Dashboard"],["upload","⬆","Upload"],["audit","⚑","Audit"],["tracking","◎","Tracking"]];
+  const mono = "'IBM Plex Mono',monospace";
+
+  return (
+    <>
+      <style>{`
+        @keyframes tickerSlide { 0%{opacity:0;transform:translateY(8px)} 12%,88%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-8px)} }
+        @keyframes dropDown    { from{opacity:0;transform:translateY(-8px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+        @keyframes onlineBlink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+        @keyframes statCount   { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+        .tb-ticker  { animation: tickerSlide 2.6s ease-in-out; }
+        .tb-drop    { animation: dropDown 0.22s cubic-bezier(0.34,1.56,0.64,1) both; }
+        .tb-live    { animation: onlineBlink 2s ease-in-out infinite; }
+        .tb-stat    { animation: statCount 0.4s ease-out both; }
+        .tb-tab { background:none; border:none; cursor:pointer; font-family:inherit; color:#4a5568; font-size:13px; font-weight:500; padding:0 16px; height:56px; border-bottom:2.5px solid transparent; white-space:nowrap; transition:all 0.2s; display:flex; align-items:center; gap:6px; }
+        .tb-tab:hover { color:#94a3b8; background:rgba(255,255,255,0.02); }
+        .tb-tab.act  { color:#38bdf8 !important; border-bottom-color:#38bdf8 !important; }
+        .tb-pbtn { background:none; border:none; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:8px; padding:5px 10px; border-radius:9px; border:1px solid #1c2030; background:#0c0f15; transition:all 0.2s; }
+        .tb-pbtn:hover { border-color:rgba(56,189,248,0.4); background:rgba(56,189,248,0.04); }
+        .tb-mi { width:100%; padding:10px 16px; display:flex; gap:10px; align-items:center; font-size:12.5px; color:#94a3b8; border:none; background:none; cursor:pointer; font-family:inherit; text-align:left; transition:background 0.15s; }
+        .tb-mi:hover { background:rgba(56,189,248,0.05); color:#dde1ea; }
+      `}</style>
+
+      {/* ── STATS TICKER STRIP ── */}
+      <div style={{ background: isDemo ? "rgba(251,191,36,0.05)" : "rgba(56,189,248,0.04)", borderBottom:"1px solid", borderBottomColor: isDemo ? "rgba(251,191,36,0.14)" : "rgba(56,189,248,0.1)", height:32, display:"flex", alignItems:"center", padding:"0 24px", gap:0, overflow:"hidden" }}>
+
+        {/* Left: mode indicator */}
+        <div style={{ display:"flex", alignItems:"center", gap:7, paddingRight:20, borderRight:"1px solid #161c28", flexShrink:0 }}>
+          <span className="tb-live" style={{ width:6, height:6, borderRadius:"50%", background: isDemo ? "#fbbf24" : "#22c55e", display:"inline-block" }}/>
+          <span style={{ fontFamily:mono, fontSize:9, letterSpacing:"2.5px", color: isDemo ? "#fbbf24" : "#22c55e", textTransform:"uppercase" }}>{isDemo ? "DEMO" : "LIVE"}</span>
+        </div>
+
+        {/* Center: animated ticker */}
+        <div style={{ flex:1, display:"flex", alignItems:"center", paddingLeft:20, height:"100%", overflow:"hidden" }}>
+          {tickerItems.length > 0 ? (
+            <div key={tickerIdx} className="tb-ticker" style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <span style={{ fontSize:13 }}>{tickerItems[tickerIdx].icon}</span>
+              <span style={{ fontFamily:mono, fontSize:10, color:"#475569" }}>{tickerItems[tickerIdx].label}</span>
+              <span style={{ fontFamily:mono, fontSize:12, fontWeight:700, color:tickerItems[tickerIdx].color }}>{tickerItems[tickerIdx].val}</span>
+            </div>
+          ) : (
+            <span style={{ fontFamily:mono, fontSize:10, color:"#1c2030" }}>Upload an invoice to see live audit stats</span>
+          )}
+        </div>
+
+        {/* Right: all stat pills inline */}
+        {auditData.length > 0 && (
+          <div style={{ display:"flex", gap:2, alignItems:"center", flexShrink:0 }}>
+            {[
+              { l:"Audited",    v:auditData.length,                        c:"#64748b",  bg:"rgba(100,116,139,0.08)" },
+              { l:"Flagged",    v:flagged.length,                          c:"#f87171",  bg:"rgba(239,68,68,0.08)"   },
+              { l:"Overcharge", v:`₹${totalOver.toLocaleString()}`,        c:"#f87171",  bg:"rgba(239,68,68,0.08)"   },
+              { l:"Verified",   v:`₹${(totalBilled-totalOver).toLocaleString()}`, c:"#4ade80", bg:"rgba(34,197,94,0.08)" },
+              { l:"Clean",      v:`${cleanRate}%`,                        c:"#38bdf8",  bg:"rgba(56,189,248,0.08)"  },
+            ].map((s,i) => (
+              <div key={s.l} className="tb-stat" style={{ display:"flex", gap:5, alignItems:"center", background:s.bg, border:`1px solid ${s.c}20`, borderRadius:5, padding:"2px 9px", animationDelay:`${i*0.06}s` }}>
+                <span style={{ fontFamily:mono, fontSize:9, color:"#334155" }}>{s.l}</span>
+                <span style={{ fontFamily:mono, fontSize:10, fontWeight:700, color:s.c }}>{s.v}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── MAIN NAV BAR ── */}
+      <div style={{ background:"#0a0c12", borderBottom:"1px solid #161c28", padding:"0 24px", position:"sticky", top:0, zIndex:100, boxShadow:"0 2px 24px rgba(0,0,0,0.45)" }}>
+        <div style={{ maxWidth:1400, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", height:56 }}>
+
+          {/* Logo */}
+          <div style={{ display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
+            <div style={{ width:32, height:32, background:"linear-gradient(135deg,#38bdf8,#0284c7)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, color:"#060709", fontWeight:900, boxShadow:"0 0 14px rgba(56,189,248,0.3)" }}>⚡</div>
+            <div>
+              <div style={{ fontFamily:mono, fontWeight:700, fontSize:14, color:"#dde1ea" }}>Logistics<span style={{ color:"#38bdf8" }}>AI</span></div>
+              <div style={{ fontSize:8, color:"#1c2030", letterSpacing:"2.5px", textTransform:"uppercase" }}>INVOICE AUDIT</div>
+            </div>
+          </div>
+
+          {/* Nav tabs */}
+          <nav style={{ display:"flex", height:"100%" }}>
+            {TABS.map(([id, icon, label]) => (
+              <button key={id} className={`tb-tab ${tab===id?"act":""}`} onClick={() => setTab(id)}>
+                <span style={{ fontSize:14 }}>{icon}</span>
+                <span>{label}</span>
+              </button>
+            ))}
+          </nav>
+
+          {/* RIGHT: Stats summary + Profile */}
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+
+            {/* Live stats cards */}
+            {auditData.length > 0 && (
+              <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+                {/* Overcharge card */}
+                <div style={{ background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:8, padding:"5px 12px", textAlign:"center" }}>
+                  <div style={{ fontFamily:mono, fontSize:13, fontWeight:700, color:"#f87171", lineHeight:1.2 }}>₹{totalOver.toLocaleString()}</div>
+                  <div style={{ fontSize:8, color:"#475569", fontFamily:mono, letterSpacing:"1px" }}>OVERCHARGE</div>
+                </div>
+                {/* Flagged card */}
+                <div style={{ background:"rgba(168,85,247,0.08)", border:"1px solid rgba(168,85,247,0.2)", borderRadius:8, padding:"5px 12px", textAlign:"center" }}>
+                  <div style={{ fontFamily:mono, fontSize:13, fontWeight:700, color:"#c084fc", lineHeight:1.2 }}>{flagged.length}</div>
+                  <div style={{ fontSize:8, color:"#475569", fontFamily:mono, letterSpacing:"1px" }}>FLAGGED</div>
+                </div>
+                {/* Clean rate card */}
+                <div style={{ background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:8, padding:"5px 12px", textAlign:"center" }}>
+                  <div style={{ fontFamily:mono, fontSize:13, fontWeight:700, color:"#4ade80", lineHeight:1.2 }}>{cleanRate}%</div>
+                  <div style={{ fontSize:8, color:"#475569", fontFamily:mono, letterSpacing:"1px" }}>CLEAN</div>
+                </div>
+              </div>
+            )}
+
+            {/* Divider */}
+            {auditData.length > 0 && <div style={{ width:1, height:22, background:"#1c2030" }}/>}
+
+            {/* Profile button */}
+            <div ref={profileRef} style={{ position:"relative" }}>
+              <button className="tb-pbtn" onClick={() => setProfileOpen(o => !o)}>
+                <div style={{ width:28, height:28, borderRadius:"50%", background:"linear-gradient(135deg,#38bdf8,#0284c7)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, color:"#060709", fontWeight:700, flexShrink:0 }}>R</div>
+                <div style={{ textAlign:"left" }}>
+                  <div style={{ fontSize:11.5, fontWeight:600, color:"#dde1ea", lineHeight:1.2 }}>Rishikesh</div>
+                  <div style={{ fontSize:9, color:"#334155", fontFamily:mono }}>Admin</div>
+                </div>
+                <span style={{ fontSize:10, color:"#334155", marginLeft:2 }}>{profileOpen?"▴":"▾"}</span>
+              </button>
+
+              {/* Profile dropdown */}
+              {profileOpen && (
+                <div className="tb-drop" style={{ position:"absolute", top:46, right:0, width:240, background:"#0c0f15", border:"1px solid #1c2030", borderRadius:14, overflow:"hidden", boxShadow:"0 20px 56px rgba(0,0,0,0.65)", zIndex:200 }}>
+
+                  {/* Profile header */}
+                  <div style={{ padding:"18px 16px 14px", background:"linear-gradient(135deg,#0a0f1a,#0d1520)", borderBottom:"1px solid #161c28", textAlign:"center" }}>
+                    <div style={{ width:46, height:46, borderRadius:"50%", background:"linear-gradient(135deg,#38bdf8,#0284c7)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, color:"#060709", fontWeight:700, margin:"0 auto 10px", boxShadow:"0 0 16px rgba(56,189,248,0.4)" }}>R</div>
+                    <div style={{ fontWeight:700, fontSize:14, color:"#dde1ea" }}>Rishikesh</div>
+                    <div style={{ fontSize:11, color:"#475569", marginTop:2 }}>rishikesh@logisticsai.in</div>
+                    <span style={{ display:"inline-block", marginTop:8, background:"rgba(56,189,248,0.12)", color:"#38bdf8", border:"1px solid rgba(56,189,248,0.25)", borderRadius:10, padding:"2px 10px", fontSize:10, fontFamily:mono, fontWeight:600 }}>PRO PLAN</span>
+                  </div>
+
+                  {/* Audit summary in profile */}
+                  {auditData.length > 0 && (
+                    <div style={{ padding:"12px 16px", borderBottom:"1px solid #161c28", display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+                      {[
+                        { l:"Audited",    v:auditData.length,                          c:"#64748b" },
+                        { l:"Flagged",    v:flagged.length,                            c:"#f87171" },
+                        { l:"Overcharge", v:`₹${totalOver.toLocaleString()}`,          c:"#f87171" },
+                        { l:"Clean Rate", v:`${cleanRate}%`,                           c:"#4ade80" },
+                      ].map(s => (
+                        <div key={s.l} style={{ background:"#0a0c12", borderRadius:7, padding:"8px 10px", textAlign:"center" }}>
+                          <div style={{ fontFamily:mono, fontSize:14, fontWeight:700, color:s.c }}>{s.v}</div>
+                          <div style={{ fontSize:9, color:"#334155", marginTop:2, fontFamily:mono }}>{s.l}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Nav links */}
+                  {[["📊","Audit Results",   "audit"],["⬆","Upload Invoice","upload"],["◎","Tracking",       "tracking"],["⬡","Dashboard",      "dashboard"]].map(([ic, label, target]) => (
+                    <button key={label} className="tb-mi" onClick={() => { setTab(target); setProfileOpen(false); }}>
+                      <span style={{ fontSize:14 }}>{ic}</span>
+                      <span>{label}</span>
+                      <span style={{ marginLeft:"auto", fontSize:10, color:"#1c2030" }}>→</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function App() {
   const [tab, setTab]             = useState("dashboard");
   const [auditData, setAuditData] = useState([]);
@@ -357,27 +560,14 @@ export default function App() {
         .ll{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 0;color:#475569;border-bottom:1px solid #0c0f15}
       `}</style>
 
-      {/* TOPBAR */}
-      <div style={{ background:"#0a0c12", borderBottom:"1px solid #161c28", padding:"0 24px", position:"sticky", top:0, zIndex:100 }}>
-        <div style={{ maxWidth:1400, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", height:56 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <div style={{ width:30, height:30, background:"linear-gradient(135deg,#38bdf8,#0284c7)", borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, color:"#060709", fontWeight:900 }}>⚡</div>
-            <div>
-              <div style={{ ...S.mono, fontWeight:600, fontSize:14, color:"#dde1ea" }}>Logistics<span style={{ color:"#38bdf8" }}>AI</span></div>
-              <div style={{ fontSize:9, color:"#1c2030", letterSpacing:"2px", textTransform:"uppercase" }}>INVOICE AUDIT</div>
-            </div>
-          </div>
-          <nav style={{ display:"flex", gap:2 }}>
-            {[["dashboard","⬡ Dashboard"],["upload","⬆ Upload"],["audit","⚑ Audit"],["tracking","◎ Tracking"]].map(([id,label]) => (
-              <button key={id} className={`nb ${tab===id?"na":""}`} onClick={() => setTab(id)}>{label}</button>
-            ))}
-          </nav>
-          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            {auditData.length > 0 && (isDemo ? <span className="dm">DEMO</span> : <span className="lv">LIVE DATA</span>)}
-            {totalOver > 0 && <span style={{ background:"rgba(239,68,68,0.1)", color:"#f87171", border:"1px solid rgba(239,68,68,0.2)", borderRadius:12, padding:"3px 10px", fontSize:11, ...S.mono }}>₹{totalOver.toLocaleString()} found</span>}
-          </div>
-        </div>
-      </div>
+      {/* ══ ENHANCED TOPBAR ══ */}
+      <TopBar
+        tab={tab} setTab={setTab}
+        auditData={auditData} isDemo={isDemo}
+        totalOver={totalOver} totalBilled={totalBilled}
+        flagged={flagged} ok={ok}
+        S={S}
+      />
 
       <div style={{ maxWidth:1400, margin:"0 auto", padding:"24px 24px 60px" }}>
 
